@@ -207,8 +207,20 @@ function animate(now){
   speed=THREE.MathUtils.clamp(speed,0,maxSpeed);
   const steerInput=(keys.left?1:0)-(keys.right?1:0);
   steer=THREE.MathUtils.damp(steer,steerInput,7,dt);
-  const grip=THREE.MathUtils.clamp(1-speed/85,.28,1);
-  yaw += steer*(.25+speed*.013)*grip*dt*(speed>1?1:0);
+  // Усиленное управление рулём
+const grip = THREE.MathUtils.clamp(1-speed/100, 0.55, 1);
+
+const steeringPower = 2.8;
+const speedFactor = THREE.MathUtils.clamp(speed / 15, 0.35, 1.5);
+
+yaw += steer * steeringPower * speedFactor * grip * dt * (speed > 0.5 ? 1 : 0);
+
+// Визуальный поворот передних колёс
+wheels.forEach(w => {
+    if (w.front) {
+        w.pivot.rotation.y = steer * 0.75;
+    }
+});
   const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
   car.position.addScaledVector(forward,speed*dt);
   car.rotation.y=yaw;
